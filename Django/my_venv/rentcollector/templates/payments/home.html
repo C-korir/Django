@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rent Payments</title>
+</head>
+<body>
+<h1>Tenants</h1>
+<ul>
+    {% for tenant in tenants %}
+        <li>{{ tenant.name }} ({{ tenant.phone_number }})</li>
+    {% empty %}
+        <li>No tenants defined.</li>
+    {% endfor %}
+</ul>
+
+<h2>Start a payment</h2>
+<form id="payment-form" method="post" action="{% url 'start_payment' %}">
+    {% csrf_token %}
+    <label for="tenant">Tenant</label>
+    <select name="tenant" id="tenant">
+        {% for tenant in tenants %}
+            <option value="{{ tenant.id }}">{{ tenant.name }}</option>
+        {% endfor %}
+    </select><br>
+    <label for="amount">Amount</label>
+    <input type="number" name="amount" id="amount" step="0.01" required><br>
+    <button type="submit">Pay via MPESA</button>
+</form>
+
+<script>
+document.getElementById('payment-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const form = event.target;
+    const data = new FormData(form);
+    fetch(form.action, {method: 'POST', body: data, headers: {'X-CSRFToken': data.get('csrfmiddlewaretoken')}})
+        .then(r => r.json())
+        .then(json => alert(JSON.stringify(json)))
+        .catch(err => alert('error:' + err));
+});
+</script>
+</body>
+</html>
